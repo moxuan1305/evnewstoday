@@ -1,174 +1,53 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>电动车电池动态追踪</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EV News Today</title>
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; }
-    body { margin: 0; padding: 20px; background-color: #f5f7fa; }
-    header { text-align: center; margin-bottom: 30px; }
-    h1 { color: #1e3a8a; margin-bottom: 10px; }
-    .btn-container { display: flex; justify-content: center; margin: 30px 0; }
-    #loadBtn {
-      padding: 12px 30px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 18px;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
-    }
-    #loadBtn:hover { background: #1d4ed8; transform: translateY(-2px); }
-    #loadBtn.loading { background: #94a3b8; cursor: wait; }
-    .news-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 25px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    .news-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-      transition: transform 0.3s;
-    }
-    .news-card:hover { transform: translateY(-5px); }
-    .card-header {
-      padding: 18px 20px 5px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .news-tag {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .tag-patent { background: #dbeafe; color: #1e40af; }
-    .tag-tech { background: #dcfce7; color: #166534; }
-    .tag-event { background: #ffedd5; color: #9a3412; }
-    .card-content { padding: 5px 20px 20px; }
-    .news-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 8px 0;
-      color: #1e293b;
-      line-height: 1.4;
-    }
-    .news-desc {
-      color: #64748b;
-      line-height: 1.6;
-      margin-bottom: 15px;
-      font-size: 15px;
-    }
-    .card-footer {
-      padding: 15px 20px;
-      background: #f8fafc;
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-    .loader {
-      text-align: center;
-      padding: 30px;
-      color: #64748b;
-    }
-    @media (max-width: 768px) {
-      .news-grid { grid-template-columns: 1fr; }
-      .card-header { flex-wrap: wrap; gap: 8px; }
+    body { font-family: sans-serif; line-height: 1.6; margin: 0; padding: 0; background: #fafafa; color: #333; }
+    header { background: #0066cc; color: #fff; text-align: center; padding: 1rem; }
+    ul { list-style: none; padding: 0.5rem; }
+    li { background: #fff; margin: 0.5rem 0; padding: 1rem; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    a { text-decoration: none; color: #0066cc; display: block; font-weight: bold; }
+    .date { font-size: 0.9rem; color: #666; margin-top: 0.3rem; }
+    @media (min-width: 600px) {
+      li { max-width: 700px; margin: 0.5rem auto; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>电动车电池动态追踪</h1>
-    <p>实时获取技术突破、专利动态与行业要闻</p>
-  </header>
-  <div class="btn-container">
-    <button id="loadBtn">一键获取今日最新动态</button>
-  </div>
-  <div id="newsContainer" class="news-grid"></div>
+  <header><h1>EV News Today</h1></header>
+  <main>
+    <ul id="news-list">
+      <li>加载中…</li>
+    </ul>
+  </main>
   <script>
-    const mockData = [
-      {
-        title: "宁德时代发布新一代钠离子电池",
-        desc: "能量密度突破200Wh/kg，零下20℃仍保持90%以上容量",
-        type: "技术突破",
-        tagClass: "tag-tech",
-        date: "2023-09-15",
-        source: "动力电池网"
-      },
-      {
-        title: "特斯拉4680电池量产良率达92%",
-        desc: "美国德州工厂周产能突破1000组电池包",
-        type: "生产进展",
-        tagClass: "tag-tech",
-        date: "2023-09-14",
-        source: "EV世纪"
-      },
-      {
-        title: "固态电池专利US2023187566A1获批",
-        desc: "锂金属负极界面稳定性提升300%，循环寿命超2000次",
-        type: "专利",
-        tagClass: "tag-patent",
-        date: "2023-09-13",
-        source: "USPTO"
-      },
-      {
-        title: "全球最大电池回收工厂在沪投产",
-        desc: "年处理量达12万吨，镍钴锰回收率超98%",
-        type: "行业事件",
-        tagClass: "tag-event",
-        date: "2023-09-12",
-        source: "财经网"
-      },
-      {
-        title: "磷酸锰铁锂材料量产成本下降40%",
-        desc: "新型液相法工艺突破，能量密度达800Wh/L",
-        type: "技术突破",
-        tagClass: "tag-tech",
-        date: "2023-09-11",
-        source: "电池中国"
+    async function loadNews() {
+      const ul = document.getElementById('news-list');
+      ul.innerHTML = '<li>加载中最新新闻…</li>';
+      try {
+        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://insideevs.com/news/feed');
+        const data = await res.json();
+
+        if (!data.items || !Array.isArray(data.items)) {
+          throw new Error('Invalid data structure');
+        }
+
+        ul.innerHTML = data.items.slice(0, 10).map(item =>
+          `<li>
+             <a href="${item.link}" target="_blank">${item.title}</a>
+             <div class="date">${new Date(item.pubDate).toLocaleString()}</div>
+           </li>`
+        ).join('');
+      } catch (e) {
+        ul.innerHTML = '<li>加载失败，请稍后重试。</li>';
+        console.error('加载新闻失败：', e);
       }
-    ];
-
-    function renderNews(data) {
-      const container = document.getElementById('newsContainer');
-      container.innerHTML = data.map(item => `
-        <div class="news-card">
-          <div class="card-header">
-            <span class="news-tag ${item.tagClass}">${item.type}</span>
-            <span>${item.date}</span>
-          </div>
-          <div class="card-content">
-            <h3 class="news-title">${item.title}</h3>
-            <p class="news-desc">${item.desc}</p>
-          </div>
-          <div class="card-footer">
-            <span>来源：${item.source}</span>
-            <button class="detail-btn">查看详情</button>
-          </div>
-        </div>
-      `).join('');
     }
-
-    document.getElementById('loadBtn').addEventListener('click', function() {
-      const btn = this;
-      btn.textContent = '数据加载中...';
-      btn.classList.add('loading');
-      
-      // 模拟网络请求延迟
-      setTimeout(() => {
-        renderNews(mockData);
-        btn.style.display = 'none';
-      }, 1500);
-    });
+    loadNews();
   </script>
 </body>
 </html>
